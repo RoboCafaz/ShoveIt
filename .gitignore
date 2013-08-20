@@ -1,0 +1,9 @@
+*.tmp
+*.metadata
+*.settings
+*.db
+bin/
+build/
+dist/
+test/
+doc/

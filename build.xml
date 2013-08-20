@@ -1,0 +1,82 @@
+<project name="RPG Engine" default="package-all">
+
+  <dirname file="${ant.file}" property="dir.project.root" />
+
+  <property name="local.dist" value="${dir.project.root}${file.separator}dist" />
+  <property name="local.dist.jar" value="${local.dist}${file.separator}jar" />
+  <property name="local.dist.jar.with.src" value="${local.dist.jar}${file.separator}with-source" />
+  <property name="local.dist.zip" value="${local.dist}${file.separator}zip" />
+
+  <property name="targetplatform" value="target_platform" />
+
+  <fileset dir="${targetplatform}" id="eclipse.framework.jars">
+    <include name="org.eclipse.*.jar" />
+    <exclude name=".svn" />
+  </fileset>
+
+  <fileset dir="${targetplatform}" id="target.platform.jars">
+    <include name="**/*" />
+    <exclude name="configuration" />
+    <exclude name="**/*build.xml" />
+    <exclude name=".svn" />
+    <exclude name="org.eclipse.*.jar" />
+  </fileset>
+
+  <fileset dir="${local.dist.jar}" id="project.jars">
+    <include name="*.jar" />
+    <exclude name="with-source/*.jar" />
+    <exclude name=".svn" />
+  </fileset>
+
+  <!--
+   ============================================================================
+   Clean-project target definition
+   ============================================================================
+  -->
+
+  <target name="clean-project">
+    <delete dir="${local.dist}" />
+  </target>
+
+  <!--
+   ============================================================================
+   Init-project target definition
+   ============================================================================
+  -->	
+	
+  <target name="init-project">
+    <mkdir dir="${local.dist}" />
+    <mkdir dir="${local.dist.jar}" />
+    <mkdir dir="${local.dist.zip}" />
+  </target>
+
+  <!--
+   ============================================================================
+   package-all target definition
+   ============================================================================
+  -->	
+	
+  <target name="package-all" depends="clean-project,init-project">
+    <subant buildpath="ShoveItCommon" antfile="build.xml" target="package" />
+    
+    <zip destfile="${local.dist}${file.separator}${ant.project.name}-target-platform.zip">
+      <fileset dir="${local.dist.jar}">
+        <include name="*.jar" />
+      </fileset>
+    	
+      <fileset dir="${targetplatform}">
+        <include name="*.jar" />
+      </fileset>
+    </zip>
+  	
+    <zip destfile="${local.dist}${file.separator}${ant.project.name}-target-platform-with-source.zip">
+      <fileset dir="${local.dist.jar.with.src}">
+        <include name="*.jar" />
+      </fileset>
+    	
+      <fileset dir="${targetplatform}">
+        <include name="*.jar" />
+      </fileset>
+    </zip>
+  </target>
+</project>

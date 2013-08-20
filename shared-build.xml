@@ -1,0 +1,147 @@
+<project name="build-shared" default="package">
+
+  <import file="build.xml" />
+
+  <property name="shared.lib" value="..${file.separator}lib" />
+  <property name="dir.target.platform" value="..${file.separator}target_platform" />
+
+  <property file="..${file.separator}ant.properties" />
+
+  <property name="versioned.project.name" value="${ant.project.name}_${version}" />
+  <property name="jar.file.name" value="${versioned.project.name}.jar" />
+
+  <property name="dir.build" value="${basedir}${file.separator}build" />
+  <property name="dir.build.src" value="${dir.build}${file.separator}src" />
+  <property name="dir.dist" value="${basedir}${file.separator}dist" />
+  <property name="dir.src" value="${basedir}${file.separator}src" />
+
+  <property name="shared.dist" value="..${file.separator}dist" />
+  <property name="shared.dist.classpath" value="${shared.dist}${file.separator}jar" />
+  <property name="shared.dist.jar" value="${shared.dist.classpath}" />
+  <property name="shared.dist.jar.with.src" value="${shared.dist.jar}${file.separator}with-source" />
+  <property name="shared.dist.zip" value="${shared.dist}${file.separator}zip" />
+
+  <property name="def.packages" value="com.robocafaz.*" />
+
+  <property name="dir.cobertura" value="${shared.lib}" />
+  <property name="dir.junit" value="${shared.lib}" />
+
+  <path id="src.exists">
+    <fileset dir="${dir.src}" />
+  </path>
+
+  <property name="src.exists.property" refid="src.exists" />
+
+  <condition property="empty.src.flag">
+    <equals arg1="" arg2="${src.exists.property}" />
+  </condition>
+
+  <path id="path.compile.src">
+    <fileset dir="${shared.lib}">
+      <include name="*.jar" />
+    </fileset>
+    <fileset dir="${dir.target.platform}">
+      <include name="**/*.jar" />
+    </fileset>
+    <fileset dir="${shared.dist.classpath}">
+      <include name="*.jar" />
+    </fileset>
+  </path>
+  
+  <!--
+  ============================================================================
+  Targets
+  ============================================================================
+  -->
+
+  <target name="all" depends="clean,init,compile,jar,dist" />
+
+  <target name="clean">
+    <delete dir="${dir.build.src}" />
+    <delete dir="${dir.build}" />
+    <delete dir="${dir.dist}" />
+  </target>
+
+  <target name="init" depends="clean">
+    <mkdir dir="${dir.build.src}" />
+    <mkdir dir="${dir.dist}" />
+    <mkdir dir="${dir.src}" />
+    <mkdir dir="${shared.dist.jar}" />
+  </target>
+
+  <target name="compile" depends="init">
+    <javac fork="true" target="1.5" destdir="${dir.build.src}" debug="on" srcdir="${dir.src}" classpathref="path.compile.src">
+      <compilerarg value="-Xlint" />
+    </javac>
+
+    <copy todir="${dir.build.src}">
+      <fileset dir="${dir.src}" casesensitive="no" includes="${def.resource}" />
+    </copy>
+  </target>
+
+
+  <target name="jar" depends="compile">
+    <jar jarfile="${dir.build}${file.separator}${versioned.project.name}-with-source.jar" compress="true" manifest="META-INF/MANIFEST.MF">
+      <fileset dir="${dir.build.src}">
+        <include name="**/*" />
+      </fileset>
+      <fileset dir="${basedir}">
+        <include name="src/**/*" />
+        <exclude name="${def.resource}" />
+      </fileset>
+      <fileset dir="${basedir}">
+        <include name="OSGI-INF/**/*" />
+      </fileset>
+    </jar>
+
+    <jar jarfile="${dir.build}${file.separator}${versioned.project.name}.jar" compress="true" manifest="META-INF/MANIFEST.MF">
+      <fileset dir="${dir.build.src}">
+        <include name="**/*" />
+      </fileset>
+      <fileset dir="${basedir}">
+        <include name="OSGI-INF/**/*" />
+      </fileset>
+    </jar>
+  </target>
+
+  <target name="dist" depends="jar">
+    <copy todir="${dir.dist}">
+      <fileset dir="${dir.build}">
+        <include name="**/*.jar" />
+      </fileset>
+    </copy>
+    <copy todir="${shared.dist.jar}">
+      <fileset dir="${dir.dist}">
+        <include name="${versioned.project.name}.jar" />
+      </fileset>
+    </copy>
+    <copy todir="${shared.dist.jar.with.src}">
+      <fileset dir="${dir.dist}">
+        <include name="*-with-source.jar" />
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="package" depends="dist">
+    <delete file="${dir.dist}${file.separator}${versioned.project.name}-dist.zip" />
+    <delete file="${dir.dist}${file.separator}${versioned.project.name}-src.zip" />
+
+    <zip destfile="${dir.dist}${file.separator}${versioned.project.name}-dist.zip">
+      <fileset dir="${dir.dist}">
+        <include name="**/*.jar" />
+      </fileset>
+    </zip>
+    <zip destfile="${dir.dist}${file.separator}${versioned.project.name}-src.zip">
+      <fileset dir="${basedir}">
+        <include name="src/**/*" />
+      </fileset>
+    </zip>
+
+    <copy todir="${shared.dist.zip}">
+      <fileset dir="${dir.dist}">
+        <include name="*.zip" />
+      </fileset>
+    </copy>
+  </target>
+  
+</project>
